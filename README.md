@@ -1,6 +1,7 @@
 ## Sexual Shape Dimorphism of human face in 8 cultures
 
-Script and data used in research paper **How and why patterns of sexual dimorphism in human faces vary across the world**
+Script and data used in research paper
+**How and why patterns of sexual dimorphism in human faces vary across the world**
 
 When you pull the repository and want to run the script, it is a good idea to start from the Dimorphism_Project.Rproj file.
 The .Rmd file constructs the analysis report. It sources extensive chunks of code from attached R scripts directly.
