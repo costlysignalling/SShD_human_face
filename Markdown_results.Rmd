@@ -1,0 +1,307 @@
+---
+title: "Report on Human sexual dimorphism"
+author: "Petr Tureček and Karel Kleisner"
+date: "03 02 2020"
+output: pdf_document
+---
+
+Running the core script, where data are loaded and further processed, most models are defined and plots are drafted, prepares this document for a neat report. If you are interested in details, you can run the Core script manually outside this report. We approach the visualizations in simmilar way. They are stored as separate scripts and sourced from this markdown file.
+
+```{r, include=FALSE}
+source("Core_script_prepare_for_report.R" )
+```
+
+```{r}
+#Few additional functions that are used in the analysis
+source("result_functions.R")
+
+#Visualize the morphs. You can inspect the results directly here
+source("visualization_morphs1.R")
+```
+
+Similar analysis is conducted also nationwise - it sores the results into tiffs automatically for better resolution
+
+```{r, include=FALSE}
+source("visualization_morphs_nationwise.R")
+```
+
+## R Markdown report of sexual dimorphism in facial morphology
+
+We report the national samples in following order
+```{r}
+reord<-c(5,2,7,6,4,8,3,1)
+(reord.labs<-c("Brazil","Cameroon","Colombia","Czech Republic","Namibia","Romania","Turkey","United Kingdom")[reord])
+```
+
+In total we had
+```{r}
+sum(summary(gtf$nat))
+```
+
+individuals from 8 different nations. Nation-wise sample sizes were
+```{r}
+(Nall<-summary(gtf$nat)[reord])
+```
+
+In this analysis we use the restricted sample, where the body height is known (N=1114). Which is essential for allometric/nonallometric decomposition. If you want to run parts of the analysis on the unrestricted sample (N=1317) load data file "Symmetrized_coordinates_all.RData". You can change this in the Core_script (see above)
+
+```{r}
+(Nmales<-summary(gtf$nat[gtf$sex=="M"])[reord])
+(Nfemales<-summary(gtf$nat[gtf$sex=="F"])[reord])
+```
+
+```{r, results="hide"}
+#Visualize vioplot
+source("visualization_vio.R")
+```
+
+Calculate the angles between the allo/nonallo and sex vectors
+```{r}
+labs<-c("all",names(tapply(sexscores1,gtf$nat,sd)))
+
+#Name vectors accordingly
+colnames(sex.vecs)<-labs
+colnames(Asex.vecs)<-labs
+colnames(Nsex.vecs)<-labs
+
+#We are not intrested in the angles in the whole sample, so we can restrict the analysis in the national samples only
+sex.vecs<-sex.vecs[,-1]
+Asex.vecs<-Asex.vecs[,-1]
+Nsex.vecs<-Nsex.vecs[,-1]
+```
+
+Vectors between Allometric vector and overal maleness-femaleness vector (the same visualization as in Scheafer et al. 2004)
+```{r}
+(Aang<-angles(sex.vecs,Asex.vecs))
+```
+
+Similar analysis for the non-allometric component of maleness-femaleness
+
+```{r}
+(Nang<-angles(sex.vecs,Nsex.vecs)) 
+```
+
+Angle between two components of Sexual shape dimorphism
+```{r}
+(ANang<-angles(Asex.vecs,Nsex.vecs))
+```
+
+Sanity check: the sum of the two Allo(Nonallo)-total angles should be roughly the same as the angle between the Allo and nonallo component
+```{r}
+ANang
+Aang+Nang
+```
+It fits :)
+
+Visualize the results
+```{r,}
+cols<-c("#00AA22","#0055EE","#44CC00","#FF2277","#004488","#880022","#CC9900","#EE0000")
+anglabs<-c("Brazil","Cameroon","Colombia","Czech Republic","Namibia","Romania","Turkey","United Kingdom")
+
+source("visualization_angles.R",encoding="UTF-8")
+
+```
+`
+```{r}
+mor.var<-data.frame(
+  disp.pop = mdisp.1[[1]],
+  disp.sex.cont = mdisp.1.sex[[1]],
+  disp.m = mdisp.m[[1]],
+  disp.f = mdisp.f[[1]]
+)[reord,]
+
+signif(mor.var,2)
+
+```
+
+All pairwise differences higher than
+```{r}
+disp.tab.sig(mdisp.1)
+```
+were statistically significant.
+
+```{r}
+disp.tab.sig(mdisp.1.sex)
+```
+for the morphological disparity controlled for sex
+
+```{r}
+disp.tab.sig(mdisp.m) 
+```
+for male faces only
+
+```{r}
+disp.tab.sig(mdisp.f)
+```
+for female faces only
+
+Male faces showed higher morphological disparity than female faces
+```{r}
+min(mdisp.sex[[3]])
+```
+
+Procrustes variances for defined groups were
+```{r}
+mdisp.sex[[1]]
+```
+
+this was true even when morphological variation between nations was accounted for
+```{r}
+min(mdisp.sex.nat[[3]])
+mdisp.sex.nat[[1]]
+```
+
+We calculated differences between the group means for total SShD and for both subdimensions and other related measures
+
+```{r}
+#Calculate difference between means from the sexscores
+dif<-abs(tapply(fsexscores1,gtf$nat[gtf$sex=="F"],mean)-tapply(msexscores1,gtf$nat[gtf$sex=="M"],mean))
+
+#Allometric
+difA<-abs(tapply(fsexscoresA,gtf2$nat[gtf2$sex=="F"],mean)-tapply(msexscoresA,gtf2$nat[gtf2$sex=="M"],mean))
+
+#Nonallometric
+difN<-abs(tapply(fsexscoresN,gtf2$nat[gtf2$sex=="F"],mean)-tapply(msexscoresN,gtf2$nat[gtf2$sex=="M"],mean))
+
+#Distinctivness and variability in height
+meanH.f<-tapply(gtf2$height[gtf2$sex=="F"],gtf2$nat[gtf2$sex=="F"],mean)
+meanH.m<-tapply(gtf2$height[gtf2$sex=="M"],gtf2$nat[gtf2$sex=="M"],mean)
+meanH<-tapply(gtf2$height,gtf2$nat,mean)
+
+difH<-abs(meanH.f-meanH.m)
+
+dif.var<-data.frame(
+  dif=dif,
+  difA=difA,
+  difN=difN,
+  difH=difH
+)[reord,]
+
+signif(dif.var,2)
+
+```
+
+
+The total SShd gets essentially pojected onto the Allometric and Nonallometric vectors. 
+```{r}
+cor.test(cos(deg2rad(Aang))*dif,difA)
+cor.test(cos(deg2rad(Nang))*dif,difN)
+```
+
+It can be, therefore, stated that sexual shape dimrphism and its allometric and non-allometric components can be sufficiently described by the distributions on the original SShD components (top row in the vioplot) and angles of the total SShD vector with the alometric and non-allometric SShD vectors (figue with angles).
+
+
+# Mixed effect results - sextypicallity vs attractiveness
+```{r}
+mixed.res1<-summary(mmodel1)[[10]]
+nammixed<-colnames(mixed.res1)
+mixed.res1<-cbind(round(mixed.res1[,1:2],3),round(mixed.res1[,3],1),round(mixed.res1[,4],2),round(mixed.res1[,5],3))
+colnames(mixed.res1)<-nammixed
+
+mixed.resA1<-summary(mmodelA1)[[10]]
+nammixed<-colnames(mixed.resA1)
+mixed.resA1<-cbind(round(mixed.resA1[,1:2],3),round(mixed.resA1[,3],1),round(mixed.resA1[,4],2),round(mixed.resA1[,5],3))
+colnames(mixed.resA1)<-nammixed
+
+mixed.resN1<-summary(mmodelN1)[[10]]
+nammixed<-colnames(mixed.resN1)
+mixed.resN1<-cbind(round(mixed.resN1[,1:2],3),round(mixed.resN1[,3],1),round(mixed.resN1[,4],2),round(mixed.resN1[,5],3))
+colnames(mixed.resN1)<-nammixed
+
+mixed.res1
+
+mixed.resA1
+
+mixed.resN1
+```
+In total SShD and its Nonallometric component, sextypicality raises attractiveness in female faces, but not in male faces. The interaction term - the difference between regression coefficicent for males and females is statistically significant. In allometric component, female faces get more attractive with allometric sextypicality, but the slope for males is not very differenct from the estimate for females.
+
+We can visulaize the linear relationship of the interaction models above in all cultures separately and together
+```{r}
+source("visualization_linear_models.R")
+#Total SShD
+figure1
+
+#Allometric SShD
+figureA
+
+#Nonallometric SShD
+figureN
+
+```
+
+For comparison we add correltaions between body height and facial attractiveness. Faces of tall men are rated as attractive and there is no effect of body height on female facial attractiveness.
+```{r}
+fall.cor.h
+mall.cor.h
+```
+
+```{r}
+mean.dist<-apply(sex.vecs,2,function(x){sqrt(sum(x^2))})
+```
+
+this distance is almost perfectly correlated with the differences between the means of the pojections (dif - see above)
+```{r}
+cor.test(mean.dist,dif)
+```
+
+Which means it is also strongly correlated with the difference in body height
+```{r}
+cor.test(difH,mean.dist)
+```
+
+The visualization of the linear model of the relationship between differences in bodz height and distance between sex-specific means in morphospace. The corridor is 89% bootstrapped compatibility interval. 
+```{r}
+library(rethinking)
+source("visualization_differences.R")
+```
+Note that all auropean countries are above the line - they have higher difference between group means than expected and most non-european countries are below the line - they have lower difference between group means than expected. It contributes to our argument. Facial morphological dimorphism seems to be more important in european countries. 
+
+We will check the relationship between disparity and SShD distance between sexes in multidimensional morphospace
+```{r}
+source("visualization_dimorphism.R")
+```
+
+we explore the relationship between several demographic variables from World population prospects https://population.un.org/wpp/ and world urbanization prospects https://population.un.org/wup/, we use data from 2015 because this year provides entries in all investigated variables
+```{r}
+dem<-read.table("demography.csv",sep="\t",header=T)
+demnam<-dem[,1]
+
+dem<-dem[,-1]
+row.names(dem)<-demnam
+round(dem,2)
+
+reord<-c(5,2,7,6,4,8,3,1)
+
+cols<-c("#00AA22","#0055EE","#44CC00","#FF2277","#004488","#880022","#CC9900","#EE0000")
+coldem<-c("#555555","#FF6600","#0066DD","#008822")
+
+pdem<-dem[,1:4]
+pdem<-pdem/rep(apply(pdem,2,max),each=8)*0.6
+
+x<-rep(3:10)
+y<-rep(0,8)
+
+par(mar=c(0,0,0,0))
+plot(1:10,1:10,bty="n",axes=F,xlab="",ylab="",xlim=c(0,10.2),ylim=c(-0.2,1.2),type="n")
+text(x,y,rownames(dem),col=cols[reord],xpd=T)
+
+
+offx<-0.1
+offy<--0.2
+demlwd<-2
+
+for(i in 1:8){
+  lines(rep(x[i]-offx/2-offx,2),c(y[i]-offy,y[i]-offy+pdem[i,1]),lwd=demlwd,col=coldem[1],xpd=T)
+  lines(rep(x[i]-offx/2,2),c(y[i]-offy,y[i]-offy+pdem[i,2]),lwd=demlwd,col=coldem[2],xpd=T)
+  lines(rep(x[i]+offx/2,2),c(y[i]-offy,y[i]-offy+pdem[i,3]),lwd=demlwd,col=coldem[3],xpd=T)
+  lines(rep(x[i]+offx/2+offx,2),c(y[i]-offy,y[i]-offy+pdem[i,4]),lwd=demlwd,col=coldem[4],xpd=T)
+    }
+
+text(rep(-0.5,4),c(3,2,1,0)*0.25,c("Urbanization","Population density","Population size","GDP per capita"),xpd=T,col=coldem,pos=4)
+
+```
+
+
+Less urbanized countries (african ones) have only relatively smaller SShD for a given total morphological disparity.
+
