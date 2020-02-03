@@ -1,4 +1,4 @@
-# Sexual Shape Dimorphism of human face in 8 cultures
+## Sexual Shape Dimorphism of human face in 8 cultures
 
 Script and data used in research paper **How and why patterns of sexual dimorphism in human faces vary across the world**
 
