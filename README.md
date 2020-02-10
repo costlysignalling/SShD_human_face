@@ -11,6 +11,6 @@ If you are interested in the details of the analysis, browse the Core_script_pre
 Visualizations that are included in the paper require a lot of additional code. It is stored in "visualization_" scripts.
 You can read the knitted report in Markdown_results.pdf file.
 
-You can track the preprint of the paper here:
-add link
+You can track the preprint of the paper at 10.31234/osf.io/7vdmb
+
 
